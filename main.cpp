@@ -80,7 +80,7 @@ void branchLeft( vector2* start_point, int len, float a)
   
   vector2 end_point(0,len);
   a+=angle;
-  end_point.rotate(a);
+  end_point.rotateBranch(a);
   end_point.x += start_point->x;
   end_point.y += start_point->y;
   drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y);
@@ -97,7 +97,7 @@ void branchRight( vector2* start_point, int len, float a)
   
   vector2 end_point(0,len);
   a-=angle;
-  end_point.rotate(a);
+  end_point.rotateBranch(a);
   end_point.x += start_point->x;
   end_point.y += start_point->y;
   drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y);

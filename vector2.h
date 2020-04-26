@@ -1,18 +1,20 @@
+#ifndef VECTOR2
+#define VECTOR2
+/***************************************************************************/
 class vector2
 {
   public:
     vector2(int a, int b) { x = a; y = b; }
-     void rotate( float angle_r )
-    {
-      float _x = static_cast<float>( x ),
-	          _y = static_cast<float>( y ),
-	           s = sinf( angle_r ),
-	           c = cosf( angle_r ),
-	           a = _x * c - _y * s,
-	           b = _x * s + _y * c;
+    int x, y;     
 
-	    x = static_cast<int>( a );
-	    y = static_cast<int>( b );
+    void rotateBranch(float angle)
+    {
+      float a = x * cos(angle) - y * sin(angle);
+      float b = x * sin(angle) + y * cos(angle);;
+
+      x = static_cast<int>( a );
+      y = static_cast<int>( b );
     }
-    int x, y;
 };
+/***************************************************************************/
+#endif

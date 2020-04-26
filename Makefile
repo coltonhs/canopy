@@ -21,3 +21,7 @@ $(PROGFILES:.cpp=): main.o stub.o
 depend :
 	makedepend ${PROGFILES}
 # DO NOT DELETE
+
+clean:
+	rm -f *.o cg01
+
