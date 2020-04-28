@@ -105,6 +105,12 @@ void resetDisplay()
 }
 
 /***************************************************************************/
+void resetAll()
+{
+
+}
+
+/***************************************************************************/
 void drawPixel(int x, int y)
 /* Turn on the pixel found at x,y */
 {
@@ -134,7 +140,7 @@ void branchLeft( vector2* start_point, int len, float a)
   end_point.rotateBranch(a);
   end_point.x += start_point->x;
   end_point.y += start_point->y;
-  drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y, 
+  drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y,
   	left_thickness);
 
   branchLeft(&end_point,len,a);
@@ -152,7 +158,7 @@ void branchRight( vector2* start_point, int len, float a)
   end_point.rotateBranch(a);
   end_point.x += start_point->x;
   end_point.y += start_point->y;
-  drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y, 
+  drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y,
   	right_thickness);
 
   branchLeft(&end_point,len,a);
@@ -305,6 +311,10 @@ void keyboard ( unsigned char key, int x, int y )  // Create Keyboard Function
 
     // ////////////////////////////////
 
+    case 08:
+      resetAll();
+      break;
+
     case 32:
       displayAxes = !displayAxes;
       break;
@@ -352,7 +362,7 @@ int main (int argc, char *argv[])
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
-		
+
 		printMenu();
 
 		glutDisplayFunc     ( display);
