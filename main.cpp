@@ -27,24 +27,31 @@
 #define WIDTH 800
 #define HEIGHT 600
 
+// All of our default parameter values
+#define DEFAULT_START_LENGTH 100.0
+#define DEFAULT_BRANCH_LENGTH 2.0
+#define DEFAULT_BRANCH_THICKNESS 1.0
+#define DEFAULT_BRANCH_REDUCTION_FACTOR 0.75
+#define DEFAULT_BRANCH_ROTATE_ANGLE (M_PI/4)
+
 // The starting length of a branch
-float start_length = 100.0f;
+float start_length = DEFAULT_START_LENGTH;
 
 // The minimum length of a branch
-float min_right_length = 2.0f;
-float min_left_length = 2.0f;
+float min_right_length = DEFAULT_BRANCH_LENGTH;
+float min_left_length = DEFAULT_BRANCH_LENGTH;
 
 // Branch Thickness
-int right_thickness = 1;
-int left_thickness = 1;
-int thickness = 1;
+int right_thickness = DEFAULT_BRANCH_THICKNESS;
+int left_thickness = DEFAULT_BRANCH_THICKNESS;
+int thickness = DEFAULT_BRANCH_THICKNESS;
 
 // The factor to reduce the length of a branch by each iteration
-float branch_reduction_factor = 0.75f;
+float branch_reduction_factor = DEFAULT_BRANCH_REDUCTION_FACTOR;
 
 // The angle that a branch is rotated by each iteration
-float right_angle = M_PI/4;
-float left_angle = M_PI/4;
+float right_angle = DEFAULT_BRANCH_ROTATE_ANGLE;
+float left_angle = DEFAULT_BRANCH_ROTATE_ANGLE;
 
 // Translations
 float xTranslate = 0.0;
@@ -105,6 +112,24 @@ void resetDisplay()
 }
 
 /***************************************************************************/
+void resetAll()
+{
+  // First reset all parameters to their default values
+  start_length = DEFAULT_START_LENGTH;
+  min_right_length = DEFAULT_BRANCH_LENGTH;
+  min_left_length = DEFAULT_BRANCH_LENGTH;
+  right_thickness = DEFAULT_BRANCH_THICKNESS;
+  left_thickness = DEFAULT_BRANCH_THICKNESS;
+  thickness = DEFAULT_BRANCH_THICKNESS;
+  branch_reduction_factor = DEFAULT_BRANCH_REDUCTION_FACTOR;
+  right_angle = DEFAULT_BRANCH_ROTATE_ANGLE;
+  left_angle = DEFAULT_BRANCH_ROTATE_ANGLE;
+
+  // Then rest our display
+  resetDisplay();
+}
+
+/***************************************************************************/
 void drawPixel(int x, int y)
 /* Turn on the pixel found at x,y */
 {
@@ -134,7 +159,7 @@ void branchLeft( vector2* start_point, int len, float a)
   end_point.rotateBranch(a);
   end_point.x += start_point->x;
   end_point.y += start_point->y;
-  drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y, 
+  drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y,
   	left_thickness);
 
   branchLeft(&end_point,len,a);
@@ -152,7 +177,7 @@ void branchRight( vector2* start_point, int len, float a)
   end_point.rotateBranch(a);
   end_point.x += start_point->x;
   end_point.y += start_point->y;
-  drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y, 
+  drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y,
   	right_thickness);
 
   branchLeft(&end_point,len,a);
@@ -299,12 +324,20 @@ void keyboard ( unsigned char key, int x, int y )  // Create Keyboard Function
 	 	if (thickness > 1)
 			thickness -= 1;
 		break;
-    case 27:
+
+    // Backspace
+    case 8:
       resetDisplay();
       break;
 
     // ////////////////////////////////
 
+    // ESC
+    case 27:
+      resetAll();
+      break;
+
+    // Space bar
     case 32:
       displayAxes = !displayAxes;
       break;
@@ -314,7 +347,9 @@ void keyboard ( unsigned char key, int x, int y )  // Create Keyboard Function
 	}
 }
 
-void printMenu() {
+/***************************************************************************/
+void printMenu()
+{
 	printf("Press...\n");
 	printf("'a' to increase the right side angle of the branches\n");
 	printf("'A' to decrease the right side angle of the branches\n");
@@ -328,18 +363,19 @@ void printMenu() {
 	printf("'P' to translate object away from the screen\n");
 	printf("'d' to increase the branch reduction factor\n");
 	printf("'D' to decrease the branch reduction factor\n");
-   printf("'q' to increase the right side minimum branch length\n");
+  printf("'q' to increase the right side minimum branch length\n");
 	printf("'Q' to decrease the right side minimum branch length\n");
 	printf("'w' to increase the left side minimum branch length\n");
 	printf("'W' to decrease the left side minimum branch length\n");
-   printf("'t' to toggle between tree growing up and down\n");
+  printf("'t' to toggle between tree growing up and down\n");
 	printf("'r' to increase right side branch thickness\n");
 	printf("'R' to decrease right side branch thickness\n");
 	printf("'l' to increase left side branch thickness\n");
 	printf("'L' to decrease left side branch thickness\n");
 	printf("'y' to increase trunk thickness\n");
 	printf("'Y' to decrease trunk thickness\n");
-	printf("'ESC' to reset all changes\n");
+  printf("'BACKSPACE' to reset ONLY transformations\n");
+  printf("'ESC' to reset ALL changes\n");
 }
 /***************************************************************************/
 int main (int argc, char *argv[])
@@ -352,7 +388,7 @@ int main (int argc, char *argv[])
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
-		
+
 		printMenu();
 
 		glutDisplayFunc     ( display);
