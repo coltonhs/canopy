@@ -1,8 +1,12 @@
+/***************************************************************************/
 //
+// CPSC 4050 Final Group Project - Tree Canopy
+// Professor Dhillon
+// Spring 2020
 //
-//
-//
-//
+// Claire Frommer
+// Bryson Rudolph
+// Colton Smith
 //
 /***************************************************************************/
 /* Include needed files */
@@ -24,7 +28,7 @@ void drawLineBresenham(int xStart, int yStart, int xEnd, int yEnd)
   int sy = yStart<yEnd ? 1 : -1;
 	int err = (dx>dy ? dx : -dy)/2;
   int e2;
-  
+
 	for(;;){
 	    drawPixel(xStart,yStart);
 	    if(xStart==xEnd && yStart==yEnd) break;
