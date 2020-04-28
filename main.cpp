@@ -33,6 +33,7 @@
 #define DEFAULT_BRANCH_THICKNESS 1.0
 #define DEFAULT_BRANCH_REDUCTION_FACTOR 0.75
 #define DEFAULT_BRANCH_ROTATE_ANGLE (M_PI/4)
+#define DEFAULT_COLOR_GRADIENT 350
 
 // The starting length of a branch
 float start_length = DEFAULT_START_LENGTH;
@@ -65,17 +66,26 @@ float baseYVal = -100;
 // Other
 bool displayAxes = false;
 
+// Color
+int colorGradient = 350;
+
 
 /***************************************************************************/
 // Forward declarations
 void drawLineDDA(float xStart, float yStart, float xEnd, float yEnd);
-void drawLineBresenham(int xStart, int yStart, int xEnd, int yEnd, int width);
+void drawLineBresenham(int xStart, int yStart, int xEnd, int yEnd, int width,
+                       float lengthUpToStartPoint, int colorGradient);
 
 void drawPixel(int x, int y);
-void drawPixelColor(int x, int y, int r, int g, int b);
+void drawPixelColor(int x, int y, float r, float g, float b);
 
 void branchLeft( vector2* sp, int len, float a);
 void branchRight( vector2* sp, int len, float a);
+
+void branchLeft( vector2* sp, int len, float a, float totalLen);
+void branchRight( vector2* sp, int len, float a, float totaLen);
+
+void toggleColors();
 
 /***************************************************************************/
 void initWindow()
@@ -124,6 +134,7 @@ void resetAll()
   branch_reduction_factor = DEFAULT_BRANCH_REDUCTION_FACTOR;
   right_angle = DEFAULT_BRANCH_ROTATE_ANGLE;
   left_angle = DEFAULT_BRANCH_ROTATE_ANGLE;
+  colorGradient = DEFAULT_COLOR_GRADIENT;
 
   // Then rest our display
   resetDisplay();
@@ -139,7 +150,7 @@ void drawPixel(int x, int y)
         glEnd();
 }
 /***************************************************************************/
-void drawPixelColor(int x, int y, int r, int g, int b)
+void drawPixelColor(int x, int y, float r, float g, float b)
 /* Turn on the pixel found at x,y */
 {
         glColor3f (r,g,b);
@@ -147,9 +158,14 @@ void drawPixelColor(int x, int y, int r, int g, int b)
            glVertex3i( x, y, 0);
         glEnd();
 }
-
+/***************************************************************************/
+float calculateDistance(float x1,float x2, float y1, float y2)
+{
+  float distance = sqrt((pow(x2 - x1,2) + pow(y2 - y1,2)));
+  return distance;
+}
 //***************************************************************************/
-void branchLeft( vector2* start_point, int len, float a)
+void branchLeft( vector2* start_point, int len, float a, float lengthUpToStartPoint)
 {
   len = len * branch_reduction_factor;
   if(len < min_left_length) return;
@@ -160,14 +176,15 @@ void branchLeft( vector2* start_point, int len, float a)
   end_point.x += start_point->x;
   end_point.y += start_point->y;
   drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y,
-  	left_thickness);
+  	left_thickness,lengthUpToStartPoint,colorGradient);
 
-  branchLeft(&end_point,len,a);
-  branchRight(&end_point,len,a);
+  lengthUpToStartPoint = lengthUpToStartPoint + calculateDistance(end_point.x, start_point->x, end_point.y, start_point->y);
+  branchLeft(&end_point,len,a,lengthUpToStartPoint);
+  branchRight(&end_point,len,a,lengthUpToStartPoint);
 }
 
 /***************************************************************************/
-void branchRight( vector2* start_point, int len, float a)
+void branchRight( vector2* start_point, int len, float a, float lengthUpToStartPoint)
 {
   len = len * branch_reduction_factor;
   if(len < min_right_length) return;
@@ -178,10 +195,11 @@ void branchRight( vector2* start_point, int len, float a)
   end_point.x += start_point->x;
   end_point.y += start_point->y;
   drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y,
-  	right_thickness);
+  	left_thickness,lengthUpToStartPoint,colorGradient);
 
-  branchLeft(&end_point,len,a);
-  branchRight(&end_point,len,a);
+  lengthUpToStartPoint = lengthUpToStartPoint + calculateDistance(end_point.x, start_point->x, end_point.y, start_point->y);
+  branchLeft(&end_point,len,a,lengthUpToStartPoint);
+  branchRight(&end_point,len,a,lengthUpToStartPoint);
 }
 /***************************************************************************/
 void drawAxes()
@@ -224,9 +242,9 @@ void display(void)   // Create The Display Function
 
   // vector2 start_point(WIDTH/2, 100);
   vector2 start_point(0, 100);
-  drawLineBresenham(start_point.x,0,start_point.x,start_point.y, thickness);
-  branchLeft(&start_point,start_length,0);
-  branchRight(&start_point,start_length,0);
+  drawLineBresenham(start_point.x,0,start_point.x,start_point.y, thickness,0,colorGradient);
+  branchLeft(&start_point,start_length,0,0);
+  branchRight(&start_point,start_length,0,0);
 
   // Reset our translations
   resetAllTransformVals();
@@ -240,28 +258,28 @@ void keyboard ( unsigned char key, int x, int y )  // Create Keyboard Function
   // Define our translation val
   float translateVal = 5;
 
-	switch ( key ) {
-	 case 't':
-	 	zRotate += 180.0f;
-		yTranslate -= 330.0f;
-		break;
-	 case 'T':
-	   zRotate -= 180.0f;
-		break;
-    case 'a':                        // Increase right angle
-		right_angle = right_angle * 1.05f;
+  switch ( key ) {
+    case 't':
+      zRotate += 180.0f;
+      yTranslate -= 330.0f;
       break;
-    case 'A':                        // Decrease right angle
+    case 'T':
+      zRotate -= 180.0f;
+      break;
+    case 'a':                                     	// Increase right angle
+      right_angle = right_angle * 1.05f;
+      break;
+    case 'A':                             		// Decrease right angle
       if(right_angle < M_PI)
-      	right_angle = right_angle / 1.05f;
-		break;
-	 case 's':								 // Increase left angle
-	 	left_angle = left_angle * 1.05f;
-		break;
-	 case 'S':								 // Decrease left angle
-	 	if(left_angle < M_PI)
-			left_angle = left_angle / 1.05f;
-		break;
+        right_angle = right_angle / 1.05f;
+	break;
+        case 's':					// Increase left angle
+	  left_angle = left_angle * 1.05f;
+	  break;
+	case 'S':					 // Decrease left angle
+	if(left_angle < M_PI)
+	  left_angle = left_angle / 1.05f;
+	break;
     // Translations ///////////////////
     case 'i':
       xTranslate += translateVal;
@@ -281,70 +299,75 @@ void keyboard ( unsigned char key, int x, int y )  // Create Keyboard Function
     case 'P':
       zTranslate -= translateVal;
       break;
-	 // Branch Reduction Values //
-	 case 'd':
-	 	branch_reduction_factor += .005;
-		break;
-	 case 'D':
-	 	branch_reduction_factor -= .005;
-		break;
-	 // Minimum Branch Length //
-	 case 'q':
-	 	min_right_length += 1.0f;
-		break;
-	 case 'Q':
-	   if (min_right_length > 1.0)
-	 		min_right_length -= 1.0f;
-		break;
-	 case 'w':
-	 	min_left_length += 1.0f;
-		break;
-	 case 'W':
-	 	if (min_left_length > 1.0)
-			min_left_length -= 1.0f;
-		break;
+    // Branch Reduction Values //
+    case 'd':
+      branch_reduction_factor += .005;
+      break;
+    case 'D':
+      branch_reduction_factor -= .005;
+      break;
+    // Minimum Branch Length //
+    case 'q':
+      min_right_length += 1.0f;
+      break;
+    case 'Q':
+      if (min_right_length > 1.0)
+        min_right_length -= 1.0f;
+      break;
+    case 'w':
+      min_left_length += 1.0f;
+      break;
+    case 'W':
+      if (min_left_length > 1.0)
+        min_left_length -= 1.0f;
+      break;
     case 'r':
-	 	right_thickness += 1;
-		break;
-	 case 'R':
-	 	if (right_thickness > 1)
-			right_thickness -= 1;
-		break;
-	 case 'l':
-	 	left_thickness += 1;
-		break;
-	 case 'L':
-	 	if (left_thickness > 1)
-			left_thickness -= 1;
-		break;
-	 case 'y':
-	 	thickness += 1;
-		break;
-	 case 'Y':
-	 	if (thickness > 1)
-			thickness -= 1;
-		break;
-
+      right_thickness += 1;
+      break;
+    case 'R':
+      if (right_thickness > 1)
+        right_thickness -= 1;
+      break;
+    case 'l':
+      left_thickness += 1;
+      break;
+    case 'L':
+      if (left_thickness > 1)
+        left_thickness -= 1;
+      break;
+    case 'y':
+      thickness += 1;
+      break;
+    case 'Y':
+      if (thickness > 1)
+        thickness -= 1;
+      break;
     // Backspace
     case 8:
       resetDisplay();
       break;
-
-    // ////////////////////////////////
-
+    // Color
+    case 'c':
+      toggleColors();
+      break;
+    case 'v':
+      if(colorGradient > 10)
+      colorGradient = colorGradient - 10;
+      break;
+    case 'V':
+      colorGradient = colorGradient + 10;
+      break;
     // ESC
     case 27:
       resetAll();
       break;
-
     // Space bar
     case 32:
       displayAxes = !displayAxes;
       break;
-
     default:
-			break;
-	}
+      break;
+  }
 }
 
 /***************************************************************************/
@@ -374,6 +397,9 @@ void printMenu()
 	printf("'L' to decrease left side branch thickness\n");
 	printf("'y' to increase trunk thickness\n");
 	printf("'Y' to decrease trunk thickness\n");
+        printf("'c' to toggle between color options\n");
+        printf("'v' to increase color gradient (HOLD DOWN)\n");
+        printf("'V' to decrease color gradient (HOLD DOWN)\n");
   printf("'BACKSPACE' to reset ONLY transformations\n");
   printf("'ESC' to reset ALL changes\n");
 }
@@ -405,3 +431,4 @@ int main (int argc, char *argv[])
 }
 
 /***************************************************************************/
+
