@@ -30,16 +30,27 @@
 // The starting length of a branch
 float start_length = 100.0f;
 
+// The minimum length of a branch
+float min_right_length = 2.0f;
+float min_left_length = 2.0f;
+
+// Branch Thickness
+int right_thickness = 1;
+int left_thickness = 1;
+int thickness = 1;
+
 // The factor to reduce the length of a branch by each iteration
 float branch_reduction_factor = 0.75f;
 
 // The angle that a branch is rotated by each iteration
-float angle = M_PI/4;
+float right_angle = M_PI/4;
+float left_angle = M_PI/4;
 
 // Translations
 float xTranslate = 0.0;
 float yTranslate = 0.0;
 float zTranslate = 0.0;
+float zRotate = 0.0;
 
 float baseZVal = -900;
 float baseYVal = -100;
@@ -51,7 +62,7 @@ bool displayAxes = false;
 /***************************************************************************/
 // Forward declarations
 void drawLineDDA(float xStart, float yStart, float xEnd, float yEnd);
-void drawLineBresenham(int xStart, int yStart, int xEnd, int yEnd);
+void drawLineBresenham(int xStart, int yStart, int xEnd, int yEnd, int width);
 
 void drawPixel(int x, int y);
 void drawPixelColor(int x, int y, int r, int g, int b);
@@ -75,6 +86,7 @@ void resetAllTransformVals()
   xTranslate = 0.0;
   yTranslate = 0.0;
   zTranslate = 0.0;
+  zRotate = 0.0;
 }
 
 /***************************************************************************/
@@ -88,6 +100,7 @@ void resetDisplay()
   initWindow();
   glTranslatef(0, 0, 0);
   /* To see the whole tree, first translate to our z val */
+  glRotatef(zRotate, 0.0, 0.0, 1.0);
   glTranslatef(0, baseYVal, baseZVal);
 }
 
@@ -114,14 +127,15 @@ void drawPixelColor(int x, int y, int r, int g, int b)
 void branchLeft( vector2* start_point, int len, float a)
 {
   len = len * branch_reduction_factor;
-  if(len < 2) return;
+  if(len < min_left_length) return;
 
   vector2 end_point(0,len);
-  a+=angle;
+  a+=left_angle;
   end_point.rotateBranch(a);
   end_point.x += start_point->x;
   end_point.y += start_point->y;
-  drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y);
+  drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y, 
+  	left_thickness);
 
   branchLeft(&end_point,len,a);
   branchRight(&end_point,len,a);
@@ -131,14 +145,15 @@ void branchLeft( vector2* start_point, int len, float a)
 void branchRight( vector2* start_point, int len, float a)
 {
   len = len * branch_reduction_factor;
-  if(len < 2) return;
+  if(len < min_right_length) return;
 
   vector2 end_point(0,len);
-  a-=angle;
+  a-=right_angle;
   end_point.rotateBranch(a);
   end_point.x += start_point->x;
   end_point.y += start_point->y;
-  drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y);
+  drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y, 
+  	right_thickness);
 
   branchLeft(&end_point,len,a);
   branchRight(&end_point,len,a);
@@ -179,11 +194,12 @@ void display(void)   // Create The Display Function
   if (displayAxes) { drawAxes();}
 
   // First do any needed translations
+  glRotatef(zRotate, 0.0, 0.0, 1.0);
   glTranslatef(xTranslate, yTranslate, zTranslate);
 
   // vector2 start_point(WIDTH/2, 100);
   vector2 start_point(0, 100);
-  drawLineBresenham(start_point.x,0,start_point.x,start_point.y);
+  drawLineBresenham(start_point.x,0,start_point.x,start_point.y, thickness);
   branchLeft(&start_point,start_length,0);
   branchRight(&start_point,start_length,0);
 
@@ -200,14 +216,27 @@ void keyboard ( unsigned char key, int x, int y )  // Create Keyboard Function
   float translateVal = 5;
 
 	switch ( key ) {
-    case 'a':                        // Increase angle
-      angle = angle * 1.05f;
+	 case 't':
+	 	zRotate += 180.0f;
+		yTranslate -= 330.0f;
+		break;
+	 case 'T':
+	   zRotate -= 180.0f;
+		break;
+    case 'a':                        // Increase right angle
+		right_angle = right_angle * 1.05f;
       break;
-    case 'A':                        // Decrease angle
-      if(angle < M_PI)
-      angle = angle / 1.05f;
-      break;
-
+    case 'A':                        // Decrease right angle
+      if(right_angle < M_PI)
+      	right_angle = right_angle / 1.05f;
+		break;
+	 case 's':								 // Increase left angle
+	 	left_angle = left_angle * 1.05f;
+		break;
+	 case 'S':								 // Decrease left angle
+	 	if(left_angle < M_PI)
+			left_angle = left_angle / 1.05f;
+		break;
     // Translations ///////////////////
     case 'i':
       xTranslate += translateVal;
@@ -227,6 +256,49 @@ void keyboard ( unsigned char key, int x, int y )  // Create Keyboard Function
     case 'P':
       zTranslate -= translateVal;
       break;
+	 // Branch Reduction Values //
+	 case 'd':
+	 	branch_reduction_factor += .005;
+		break;
+	 case 'D':
+	 	branch_reduction_factor -= .005;
+		break;
+	 // Minimum Branch Length //
+	 case 'q':
+	 	min_right_length += 1.0f;
+		break;
+	 case 'Q':
+	   if (min_right_length > 1.0)
+	 		min_right_length -= 1.0f;
+		break;
+	 case 'w':
+	 	min_left_length += 1.0f;
+		break;
+	 case 'W':
+	 	if (min_left_length > 1.0)
+			min_left_length -= 1.0f;
+		break;
+    case 'r':
+	 	right_thickness += 1;
+		break;
+	 case 'R':
+	 	if (right_thickness > 1)
+			right_thickness -= 1;
+		break;
+	 case 'l':
+	 	left_thickness += 1;
+		break;
+	 case 'L':
+	 	if (left_thickness > 1)
+			left_thickness -= 1;
+		break;
+	 case 'y':
+	 	thickness += 1;
+		break;
+	 case 'Y':
+	 	if (thickness > 1)
+			thickness -= 1;
+		break;
     case 27:
       resetDisplay();
       break;
@@ -242,6 +314,33 @@ void keyboard ( unsigned char key, int x, int y )  // Create Keyboard Function
 	}
 }
 
+void printMenu() {
+	printf("Press...\n");
+	printf("'a' to increase the right side angle of the branches\n");
+	printf("'A' to decrease the right side angle of the branches\n");
+	printf("'s' to increase the left side angle of the branches\n");
+	printf("'S' to decrease the left side angle of the branches\n");
+	printf("'i' to translate object right\n");
+	printf("'I' to translate object left\n");
+	printf("'o' to translate object up\n");
+	printf("'O' to translate object down\n");
+	printf("'p' to translate object towards the screen\n");
+	printf("'P' to translate object away from the screen\n");
+	printf("'d' to increase the branch reduction factor\n");
+	printf("'D' to decrease the branch reduction factor\n");
+   printf("'q' to increase the right side minimum branch length\n");
+	printf("'Q' to decrease the right side minimum branch length\n");
+	printf("'w' to increase the left side minimum branch length\n");
+	printf("'W' to decrease the left side minimum branch length\n");
+   printf("'t' to toggle between tree growing up and down\n");
+	printf("'r' to increase right side branch thickness\n");
+	printf("'R' to decrease right side branch thickness\n");
+	printf("'l' to increase left side branch thickness\n");
+	printf("'L' to decrease left side branch thickness\n");
+	printf("'y' to increase trunk thickness\n");
+	printf("'Y' to decrease trunk thickness\n");
+	printf("'ESC' to reset all changes\n");
+}
 /***************************************************************************/
 int main (int argc, char *argv[])
 {
@@ -253,6 +352,8 @@ int main (int argc, char *argv[])
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
+		
+		printMenu();
 
 		glutDisplayFunc     ( display);
 		glutIdleFunc	      ( display);
@@ -260,6 +361,7 @@ int main (int argc, char *argv[])
 		initWindow();
 
     /* To see the whole tree, first translate to our z val */
+	 glRotatef(zRotate, 0.0, 0.0, 1.0);
     glTranslatef(0, baseYVal, baseZVal);
 
 		glutMainLoop();
