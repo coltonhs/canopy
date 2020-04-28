@@ -20,8 +20,9 @@ void drawPixel(int x, int y);
 void drawPixelColor(int x, int y, int r, int g, int b);
 
 /***************************************************************************/
-void drawLineBresenham(int xStart, int yStart, int xEnd, int yEnd)
+void drawLineBresenham(int xStart, int yStart, int xEnd, int yEnd, int width)
 {
+	int j;
 	int dx = abs(xEnd-xStart);
   int sx = xStart<xEnd ? 1 : -1;
 	int dy = abs(yEnd-yStart);
@@ -30,7 +31,10 @@ void drawLineBresenham(int xStart, int yStart, int xEnd, int yEnd)
   int e2;
 
 	for(;;){
-	    drawPixel(xStart,yStart);
+		 for (j = 0; j < width/2+1; j++) {
+	    	drawPixel(xStart+j,yStart);
+			drawPixel(xStart-j,yStart);
+		 }
 	    if(xStart==xEnd && yStart==yEnd) break;
 	    e2 = err;
 	    if(e2>-dx){err -=dy; xStart+=sx;}

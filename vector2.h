@@ -14,18 +14,18 @@
 /***************************************************************************/
 class vector2
 {
-  public:
-    vector2(int a, int b) { x = a; y = b; }
-    int x, y;
+	public:
+		vector2(int a, int b) { x = a; y = b; }
+		int x, y;
 
-    void rotateBranch(float angle)
-    {
-      float a = x * cos(angle) - y * sin(angle);
-      float b = x * sin(angle) + y * cos(angle);;
+		void rotateBranch(float angle)
+		{
+			float a = x * cos(angle) - y * sin(angle);
+			float b = x * sin(angle) + y * cos(angle);
 
-      x = static_cast<int>( a );
-      y = static_cast<int>( b );
-    }
+			x = static_cast<int>( a );
+			y = static_cast<int>( b );
+		}
 };
 /***************************************************************************/
 #endif
