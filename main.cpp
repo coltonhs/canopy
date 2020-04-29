@@ -195,7 +195,7 @@ void branchRight( vector2* start_point, int len, float a, float lengthUpToStartP
   end_point.x += start_point->x;
   end_point.y += start_point->y;
   drawLineBresenham(start_point->x,start_point->y,end_point.x,end_point.y,
-  	left_thickness,lengthUpToStartPoint,colorGradient);
+  	right_thickness,lengthUpToStartPoint,colorGradient);
 
   lengthUpToStartPoint = lengthUpToStartPoint + calculateDistance(end_point.x, start_point->x, end_point.y, start_point->y);
   branchLeft(&end_point,len,a,lengthUpToStartPoint);
