@@ -362,9 +362,11 @@ void keyboard ( unsigned char key, int x, int y )  // Create Keyboard Function
       resetAll();
       break;
     // Space bar
+    /*
     case 32:
       displayAxes = !displayAxes;
       break;
+    */
     default:
       break;
   }
@@ -397,9 +399,9 @@ void printMenu()
 	printf("'L' to decrease left side branch thickness\n");
 	printf("'y' to increase trunk thickness\n");
 	printf("'Y' to decrease trunk thickness\n");
-        printf("'c' to toggle between color options\n");
-        printf("'v' to increase color gradient (HOLD DOWN)\n");
-        printf("'V' to decrease color gradient (HOLD DOWN)\n");
+  printf("'c' to toggle between color options\n");
+  printf("'v' to increase color gradient (HOLD DOWN)\n");
+  printf("'V' to decrease color gradient (HOLD DOWN)\n");
   printf("'BACKSPACE' to reset ONLY transformations\n");
   printf("'ESC' to reset ALL changes\n");
 }
@@ -431,4 +433,3 @@ int main (int argc, char *argv[])
 }
 
 /***************************************************************************/
-
